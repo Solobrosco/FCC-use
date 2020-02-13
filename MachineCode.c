@@ -1,3 +1,4 @@
+// Collaboators: Ramiro G, Jamal B.  
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,11 +13,103 @@ typedef struct rFormat{
 	int i; 
 }RFormat;
 
-void printFormat(RFormat *instruct){
-	
+int getFunCode(char* opcode){
+	if (strcmp(opcode, "add") == 0) return 0b100000;
+    if (strcmp(opcode, "addu") == 0) return 0b100001;
+    if (strcmp(opcode, "and") == 0) return 0b100100;
+    if (strcmp(opcode, "jr") == 0) return 0b001000;
+    if (strcmp(opcode, "nor") == 0) return 0b100111;
+    if (strcmp(opcode, "or") == 0) return 0b100101;
+    if (strcmp(opcode, "slt") == 0) return 0b101010;
+    if (strcmp(opcode, "sltu") == 0) return 0b101011;
+    if (strcmp(opcode, "sll") == 0) return 0b000000;
+    if (strcmp(opcode, "srl") == 0) return 0b000010;
+    if (strcmp(opcode, "sub") == 0) return 0b100010;
+    if (strcmp(opcode, "subu") == 0) return 0b100011;
+    if (strcmp(opcode, "div") == 0) return 0b011010;
+    if (strcmp(opcode, "divu") == 0) return 0b011011;
+    if (strcmp(opcode, "mfhi") == 0) return 0b010000;
+    if (strcmp(opcode, "mflo") == 0) return 0b010010;
+    if (strcmp(opcode, "mult") == 0) return 0b011000;
+    if (strcmp(opcode, "multu") == 0) return 0b011001;
+    if (strcmp(opcode, "sra") == 0) return 0b000011;
+    if (strcmp(opcode, "break"  ) == 0) return 0b001101;
+    if (strcmp(opcode, "jalr") == 0) return 0b001001;
+    if (strcmp(opcode, "mthi") == 0) return 0b010001;
+    if (strcmp(opcode, "mtlo") == 0) return 0b010011;
+    if (strcmp(opcode, "sllv") == 0) return 0b000100;
+    if (strcmp(opcode, "srav") == 0) return 0b000111;
+    if (strcmp(opcode, "srlv") == 0) return 0b000110;
+    if (strcmp(opcode, "syscall") == 0) return 0b001100;
+    if (strcmp(opcode, "xor") == 0) return 0b100110;
+	return 1;
 }
 
-int getOpval(char* opcode){
+int regVal(char* r){
+	if(strcmp(r,"zero") == 0) return 0;
+	if(strcmp(r,"at") == 0) return 1;
+	if(strcmp(r,"v0") == 0) return 2;
+	if(strcmp(r,"v1") == 0) return 3;
+	if(strcmp(r,"a0") == 0) return 4;
+	if(strcmp(r,"a1") == 0) return 5;
+	if(strcmp(r,"a2") == 0) return 6;
+	if(strcmp(r,"a3") == 0) return 7;
+	if(strcmp(r,"t0") == 0) return 8;
+	if(strcmp(r,"t1") == 0) return 9;
+	if(strcmp(r,"t2") == 0) return 10;
+	if(strcmp(r,"t3") == 0) return 11;
+	if(strcmp(r,"t4") == 0) return 12;
+	if(strcmp(r,"t5") == 0) return 13;
+	if(strcmp(r,"t6") == 0) return 14;
+	if(strcmp(r,"t7") == 0) return 15;
+	if(strcmp(r,"s0") == 0) return 16;
+	if(strcmp(r,"s1") == 0) return 17;
+	if(strcmp(r,"s2") == 0) return 18;
+	if(strcmp(r,"s3") == 0) return 19;
+	if(strcmp(r,"s4") == 0) return 20;
+	if(strcmp(r,"s5") == 0) return 21;
+	if(strcmp(r,"s6") == 0) return 22;
+	if(strcmp(r,"s7") == 0) return 23;
+	if(strcmp(r,"t8") == 0) return 24;
+	if(strcmp(r,"t9") == 0) return 25;
+	if(strcmp(r,"k0") == 0) return 26;
+	if(strcmp(r,"k1") == 0) return 27;
+	if(strcmp(r,"gp") == 0) return 28;
+	if(strcmp(r,"sp") == 0) return 29;
+	if(strcmp(r,"fp") == 0) return 30;
+	if(strcmp(r,"ra") == 0) return 31;
+	return 1;
+}
+
+int putTogether(RFormat *instruct){
+	return getFunCode(instruct->opcode) + (instruct->i << 6) + (regVal(instruct->rd) << 11) + (regVal(instruct->rt) << 16) + (regVal(instruct->rd) << 21);
+}
+
+void setInt2Bin(int num, char* MC){
+	for(int i = 0; i < 32; i++){
+		int ask = 0x1 << i;
+		MC[31 - i] = num & ask ? '1' : '0';
+	}
+	MC[32] = 0;
+}
+
+void printFormat(RFormat *instruct){
+	char MC[32];
+	setInt2Bin(putTogether(instruct),MC);
+	printf("Operation: %s\n""Rs: %s (R%d)\n""Rt: %s (R%d)\n""Rd: %s (R%d)\n""Shamt: %d\n""Funct: %d\n""Machine code %s\n",
+			instruct->opcode, 
+			instruct->rs, 
+			regVal(instruct->rs), 
+			instruct->rt,
+			regVal(instruct->rt),
+			instruct->rd,
+			regVal(instruct->rd),
+			instruct->i,
+			getFunCode(instruct->opcode),
+			MC);
+}
+
+int getFieldLocation(char* opcode){
 	if (strcmp(opcode, "add") == 0)
 		return 0x312;	
     if (strcmp(opcode, "addu") == 0) 
@@ -82,25 +175,25 @@ void scanInput(RFormat *instruct){
 	const char c[2] = ",";
 	char regsisters[32];
 	char *pnt;
-	int mask =  0xf00;
+	int ask =  0xf00;
 
 	scanf("%[^\n]", regsisters);
 
 	pnt = strtok(regsisters, c);
 
 	for(int i = 0; i < 3; i++){
-		int opval = (mask & getOpval(instruct->opcode)) >> (2-i) * 4;
-		if(opval == 1){
+		int location = (ask & getFieldLocation(instruct->opcode)) >> (2-i) * 4;
+		if(location == 1){
 			sscanf(pnt, "%s", instruct->rs);
-		}else if(opval == 2){
+		}else if(location == 2){
 			sscanf(pnt, "%s", instruct->rt);
-		}else if(opval == 3){
+		}else if(location == 3){
 			sscanf(pnt, "%s", instruct->rd);
-		}else if(opval == 4){
+		}else if(location == 4){
 			sscanf(pnt, "%d", &(instruct->i));
 		}
 		pnt = strtok(NULL, c);
-		mask = mask >> 4; 
+		ask = ask >> 4; 
 	}
 }
 
