@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-// %x = in hex code for printf()
+
+// structure of Rformat
 typedef struct rFormat{
 	char opcode[8];
 	char rs[5];
@@ -13,6 +14,7 @@ typedef struct rFormat{
 	int i; 
 }RFormat;
 
+// gets the function code from opcode respectively
 int getFunCode(char* opcode){
 	if (strcmp(opcode, "add") == 0) return 0b100000;
     if (strcmp(opcode, "addu") == 0) return 0b100001;
@@ -45,6 +47,7 @@ int getFunCode(char* opcode){
 	return 1;
 }
 
+// gets register values
 int regVal(char* r){
 	if(strcmp(r,"zero") == 0) return 0;
 	if(strcmp(r,"at") == 0) return 1;
@@ -81,10 +84,12 @@ int regVal(char* r){
 	return 1;
 }
 
+// gets each field of struct and combines them into 32 bit
 int putTogether(RFormat *instruct){
 	return getFunCode(instruct->opcode) + (instruct->i << 6) + (regVal(instruct->rd) << 11) + (regVal(instruct->rt) << 16) + (regVal(instruct->rd) << 21);
 }
 
+// goes through 32bits and makes a 1|0 conversion
 void setInt2Bin(int num, char* MC){
 	for(int i = 0; i < 32; i++){
 		int ask = 0x1 << i;
@@ -93,10 +98,11 @@ void setInt2Bin(int num, char* MC){
 	MC[32] = 0;
 }
 
+// Prints
 void printFormat(RFormat *instruct){
 	char MC[32];
 	setInt2Bin(putTogether(instruct),MC);
-	printf("Operation: %s\n""Rs: %s (R%d)\n""Rt: %s (R%d)\n""Rd: %s (R%d)\n""Shamt: %d\n""Funct: %d\n""Machine code %s\n",
+	printf("Operation: %s\n""Rs: %s (R%d)\n""Rt: %s (R%d)\n""Rd: %s (R%d)\n""Shamt: %d\n""Funct: %d\n""Machine code: %s\n",
 			instruct->opcode, 
 			instruct->rs, 
 			regVal(instruct->rs), 
@@ -109,6 +115,7 @@ void printFormat(RFormat *instruct){
 			MC);
 }
 
+// gets register mapping for a specific operation
 int getFieldLocation(char* opcode){
 	if (strcmp(opcode, "add") == 0)
 		return 0x312;	
@@ -169,6 +176,7 @@ int getFieldLocation(char* opcode){
     return 1;
 }
 
+// scans user input
 void scanInput(RFormat *instruct){
 	scanf("%s", instruct->opcode);
 
@@ -197,6 +205,7 @@ void scanInput(RFormat *instruct){
 	}
 }
 
+// Starts
 int main(void){	
 	RFormat* instruction;
 	printf("Enter an R-format instruction:\n");
