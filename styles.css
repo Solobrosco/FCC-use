@@ -1,3 +1,11 @@
 html{
     background-color: lightgrey;
 }
+
+.tile{
+    width: 75px;
+    height: 75px;
+    border-radius: 10px;
+    background-color: #ffffe6;
+    text-align: center;
+}
