@@ -1,0 +1,26 @@
+{
+  "name": "web-data",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "Hello World"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Solobrosco/FCC-use.git"
+  },
+  "keywords": [
+    "Web",
+    "Page"
+  ],
+  "author": "Nikko S.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Solobrosco/FCC-use/issues"
+  },
+  "homepage": "https://github.com/Solobrosco/FCC-use#readme",
+  "dependencies": {
+    "node-static": "^0.7.11"
+  }
+}
